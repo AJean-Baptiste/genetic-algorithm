@@ -15,7 +15,7 @@ cut---------------/\
 after crossing:  
 cell 44: 010110010|000101101000110101101  
 cell 87: 101101111|011100111100(0)00011011  
-random mutation---/\  
+random mutation-----------------/\  
                           
 after that, we once again have 100 cell, and we reitterate that for each generation until the problem is solved:
 
