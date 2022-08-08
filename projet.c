@@ -3,42 +3,42 @@
 #include <stdlib.h>
 #include <time.h>
 
-double a = -4; //borne inférieur
-double b = 4; //borne superieur
-int N = 100; //nombre de particules par générations
-int generation = 150; //nombre de génération
-double PR = 0.5; //probabilité de recombination
-double PM = 0.01; //probabilité de mutation
-int doElitist = 0; //faire des génération elitistes(la meilleure particules est obligatoirement reproduite 5 fois) 1 = oui, 0 = non
+double a = -4; //start of the study zone
+double b = 4; //end of the study zone
+int N = 100; //number of creatures
+int generation = 150; //number of generation
+double PR = 0.5; //recombination probability
+double PM = 0.01; //mutation probability
+int doElitist = 0; //elitist mode(the best creature is replicated 5 times) 1 = yes, 0 = no
 
-int *intToBin(int number); //convertion d'un nombre en un string contenant sa valeur binaire
+int *intToBin(int number); //convert a number to a string of binary number
 int *intToBin2(int number);
-int binToInt(int bits[]); //convertion d'un string binaire en un nombre
-int reproduction(double fitness[], double random, double minFitness); //séquence de reproduction (phase 1)
-void recombination(double random, int particles[], int particle1, int particle2); //séquence de recombination (phase 2)
-void mutation(double random, int particles[], int particle); //séquence de mutation (phase 3)
-void nonElitist(int particles[], double fitness[]); //effectue une reproduction elitiste
-void elitist(int particles[], double fitness[]); //effectue une reproduction non elitiste
-double function(double x); //fonction qui definie le Fitness
+int binToInt(int bits[]); //reverse convertion of the binary number
+int reproduction(double fitness[], double random, double minFitness); //reproduction sequence (phase 1)
+void recombination(double random, int particles[], int particle1, int particle2); //recomination sequence (phase 2)
+void mutation(double random, int particles[], int particle); //mutation sequence (phase 3)
+void nonElitist(int particles[], double fitness[]); //elitist reproduction
+void elitist(int particles[], double fitness[]); //non elitist reproduction
+double function(double x); //fitness function
 
 void main()
 {
-    int particles[N];
-    double position[N];
-    double fitness[N];
-    int newParticles[N];
+    int particles[N]; //particle number array
+    double position[N]; //position in X
+    double fitness[N]; //fitness (Y = 1+sin(x) )
+    int newParticles[N]; //particle of the next generation
     double random;
     double length = (b-a);
     srand((double)time(NULL));
 
-    for (int i = 0; i<N; i++)
+    for (int i = 0; i<N; i++) //initiation of arrays
     {
         particles[i] = 0;
         position[i] = 0;
         fitness[i] = 0;
     }
 
-    for (int i = 0; i<N; i++)
+    for (int i = 0; i<N; i++) //first generation, gives a random number to every particles and give them their fitness
     {
         random = ((double)rand()/(double)RAND_MAX);
         particles[i] = 1073741823*random;
@@ -46,17 +46,17 @@ void main()
         fitness[i] = function(position[i]);
     }
     
-    for (int i = 0; i<N; i++)
+    for (int i = 0; i<N; i++) //print the first generation
         printf("%f %f \n", position[i], fitness[i]);
     
-    for (int h = 0; h<generation; h++)
+    for (int h = 0; h<generation; h++) //do all the next generation until the end
     {
         if (doElitist == 0)
             nonElitist(particles, fitness);
         else
             elitist(particles, fitness);
 
-        for (int i = 0; i<N; i++)
+        for (int i = 0; i<N; i++) //do the three step of reproduction
         {
             random = ((double)rand()/(double)RAND_MAX);
             int particle2 = ((double)rand()/(double)RAND_MAX)*99;
@@ -69,13 +69,13 @@ void main()
 
         }
 
-        for (int i = 0; i<N; i++)
+        for (int i = 0; i<N; i++) //gives the new particules theirs positions and fitness for the next generation
         {
             position[i] = ((particles[i]/1073741823.0)*length)+a;
             fitness[i] = function(position[i]);
         }
 
-        if (h+1 == 1 || h+1 == 10 || h+1 == 20 || h+1 == 30 || h+1 == 40 || h+1 == 50){
+        if (h+1 == 1 || h+1 == 10 || h+1 == 20 || h+1 == 30 || h+1 == 40 || h+1 == 50){//print for generation 10,20,30,40,50
             printf ("generation: %d\n", h+1);
             for (int i = 0; i<N; i++)
                 printf ("%f %f \n", position[i], fitness[i]);
@@ -83,12 +83,12 @@ void main()
     }
 }
 
-void elitist(int particles[], double fitness[])
+void elitist(int particles[], double fitness[]) //elitist function
 {
     double maxFitness = 0;
     int bestParticlePos = 0;
     int bestParticle = 0;
-    for (int i = 0; i<N; i++)
+    for (int i = 0; i<N; i++)// find the best particles
     {
         if (maxFitness < fitness[i])
         {
@@ -96,26 +96,26 @@ void elitist(int particles[], double fitness[])
             maxFitness = fitness[i];
         }
     }
-    bestParticle = particles[bestParticlePos];
-    nonElitist(particles, fitness);
-    for (int i = 0; i<5; i++)
+    bestParticle = particles[bestParticlePos];//save the best particule
+    nonElitist(particles, fitness);//do a normal reproduction
+    for (int i = 0; i<5; i++)//push the best particule 5 times in the array
     {
         particles[i] = bestParticle;
     }
 }
 
-void nonElitist(int particles[], double fitness[])
+void nonElitist(int particles[], double fitness[])// normal reproduction
 {
     double minFitness = -0.1;
     double random;
     int newParticles[N];
     srand((double)time(NULL));
-        for (int i = 0; i<N; i++)
+        for (int i = 0; i<N; i++) //avoid negative fitness issue (almost never used, can be removed)
         {
             if (minFitness > fitness[i])
                 minFitness = fitness[i];
         }
-        for (int i = 0; i<N; i++)
+        for (int i = 0; i<N; i++) //select a random particle and do a reproduction
         {
             random = ((double)rand()/(double)RAND_MAX);
             int select = reproduction(fitness, random, minFitness);
@@ -127,15 +127,15 @@ void nonElitist(int particles[], double fitness[])
         }
 }
 
-double function(double x)
+double function(double x) //the fitness function
 {
     return (sin(x)+1);
 }
 
-void mutation(double random, int particles[], int particle)
+void mutation(double random, int particles[], int particle) //the random mutation
 {
-    int bitMutation = 3000*random;
-    int *bin = intToBin(particles[particle]);
+    int bitMutation = 3000*random; //select a bit between the bit 0 and 30
+    int *bin = intToBin(particles[particle]); //convert the particle to bit number and do the mutation (if 1 chang to 0, if 0 change to 1)
     if (bin[bitMutation] == 0) 
         bin[bitMutation] = 1;
     else
@@ -143,14 +143,14 @@ void mutation(double random, int particles[], int particle)
     particles[particle] = binToInt(bin);
 }
 
-void recombination(double random, int particles[], int particle1, int particle2)
+void recombination(double random, int particles[], int particle1, int particle2)// recombination for 2 particule
 {
-    int *bin1 = intToBin(particles[particle1]);
+    int *bin1 = intToBin(particles[particle1]);//convert the two particles to binary numbers
     int *bin2 = intToBin2(particles[particle2]);
-    int cutPos = ((random*100)-50)*0.6;
+    int cutPos = ((random*100)-50)*0.6;// select where the cut will appens
     int tempbin1;
     int tempbin2;
-    for (int i = 0; i < cutPos; i++)
+    for (int i = 0; i < cutPos; i++) //do the cut and recombination
     {
         tempbin1 = bin1[i];
         tempbin2 = bin2[i];
@@ -161,7 +161,7 @@ void recombination(double random, int particles[], int particle1, int particle2)
     particles[particle2] = binToInt(bin2);
 }
 
-int *intToBin(int number)
+int *intToBin(int number) //convert int to binary string
 {
     static int bin[30];
     int n = number;
@@ -187,7 +187,7 @@ int *intToBin2(int number)
     return (bin);
 }
 
-int binToInt(int bits[])
+int binToInt(int bits[]) //convert binary string to bit
 {
     int a = 0;
     for (int i = 0; i<30; i++)
@@ -195,7 +195,7 @@ int binToInt(int bits[])
     return a;
 }
 
-int reproduction(double fitness[], double random, double minFitness)
+int reproduction(double fitness[], double random, double minFitness) //reproduction phase
 {
     double tempFitness[N];
     for (int i = 0; i < N; i++)
